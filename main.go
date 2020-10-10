@@ -25,15 +25,15 @@ func main() {
 func counter() {
 	files, _ := ioutil.ReadDir("./Diary/")
 	for _, f := range files {
-		date, ok := getDate(f.Name())
+		date, ok := dateOf(f.Name())
 		if !ok {
 			continue
 		}
-		set(date)
+		record(date)
 	}
 }
 
-func getDate(filename string) (time.Time, bool) {
+func dateOf(filename string) (time.Time, bool) {
 	if len(filename) < 10 {
 		return time.Time{}, false
 	}
@@ -44,12 +44,16 @@ func getDate(filename string) (time.Time, bool) {
 	return t, true
 }
 
-func set(date time.Time) {
+func record(date time.Time) {
 	year, month, day := date.Year(), date.Month(), date.Day()
+	// 那天有记录
 	days[year][month][day] = true
-	monthes[year][0] = true
+	// 那月有记录
 	monthes[year][int(month)] = true
+	// 那年有记录
+	monthes[year][0] = true
 	dec := year / 10
+	// 那个十年有记录
 	decades[dec] = true
 }
 
@@ -80,26 +84,6 @@ func makeContent() string {
 		content += yearSection(year)
 	}
 	return content
-}
-
-func yearHeader(year int) string {
-	return fmt.Sprintf("## %d", year)
-}
-
-func yearHeaderLink(year int) string {
-	return fmt.Sprintf("##%%20%d", year)
-}
-
-func monthHeader(year, month int) string {
-	return fmt.Sprintf("### %d-%02d", year, month)
-}
-
-func monthHeaderLink(year, month int) string {
-	return fmt.Sprintf("###%%20%d-%02d", year, month)
-}
-
-func fmtNum(i int) string {
-	return fmt.Sprintf("%d", i)
 }
 
 func yearTable() string {
@@ -191,4 +175,24 @@ func monthView(year, month int) string {
 	}
 	content += fmt.Sprintf("\n> [年份](#%%20年份) - [%d](%s)\n", year, yearHeaderLink(year))
 	return content
+}
+
+func yearHeader(year int) string {
+	return fmt.Sprintf("## %d", year)
+}
+
+func yearHeaderLink(year int) string {
+	return fmt.Sprintf("##%%20%d", year)
+}
+
+func monthHeader(year, month int) string {
+	return fmt.Sprintf("### %d-%02d", year, month)
+}
+
+func monthHeaderLink(year, month int) string {
+	return fmt.Sprintf("###%%20%d-%02d", year, month)
+}
+
+func fmtNum(i int) string {
+	return fmt.Sprintf("%d", i)
 }
