@@ -32,6 +32,7 @@ func counter() {
 		set(date)
 	}
 }
+
 func getDate(filename string) (time.Time, bool) {
 	if len(filename) < 10 {
 		return time.Time{}, false
@@ -42,6 +43,7 @@ func getDate(filename string) (time.Time, bool) {
 	}
 	return t, true
 }
+
 func set(date time.Time) {
 	year, month, day := date.Year(), date.Month(), date.Day()
 	days[year][month][day] = true
