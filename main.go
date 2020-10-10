@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 )
@@ -16,14 +17,19 @@ var monthHasRecord = [allYear][13]bool{}
 var yearHasRecord = [allYear / 10][11]bool{}
 
 func main() {
+	content := makeContent()
+	create("new.md", content)
+}
+
+func makeContent() string {
+
 	files, _ := ioutil.ReadDir("./Diary/")
 	for _, f := range files {
-		t, ok := getTime(f.Name())
+		date, ok := getDate(f.Name())
 		if !ok {
 			continue
 		}
-		// fmt.Println(t)
-		year, month, day := t.Year(), t.Month(), t.Day()
+		year, month, day := date.Year(), date.Month(), date.Day()
 		dayHasRecord[year][month][day] = true
 		monthHasRecord[year][0] = true
 		monthHasRecord[year][int(month)] = true
@@ -32,60 +38,48 @@ func main() {
 		yearHasRecord[d][y] = true
 	}
 
-	// for year, has := range monthHasRecord {
-	// 	if has[0] {
-	// 		fmt.Printf("%d: ", year)
-	// 		for i := 1; i <= 12; i++ {
-	// 			if has[i] {
-	// 				fmt.Printf(" %02d", i)
-	// 			}
-	// 		}
-	// 		fmt.Println()
-	// 	}
-	// }
-
 	//
 	//制作年代表
 	//
-	fmt.Print("# 年代表\n\n")
-	fmt.Println("|0|1|2|3|4|5|6|7|8|9|")
-	fmt.Println("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
+	content := fmt.Sprint("# 年代表\n\n")
+	content += fmt.Sprintln("|0|1|2|3|4|5|6|7|8|9|")
+	content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
 	for d, has := range yearHasRecord {
 		if !has[10] {
 			continue
 		}
-		fmt.Print("|")
+		content += fmt.Sprint("|")
 		y := d * 10
 		for i := 0; i < 10; i++ {
 			year := y + i
 			if has[i] {
-				fmt.Printf("[%d](%s)", year, yearHeaderLink(year))
+				content += fmt.Sprintf("**[%d](%s)**", year, yearHeaderLink(year))
 			}
-			fmt.Print("|")
+			content += fmt.Sprint("|")
 		}
-		fmt.Println()
+		content += fmt.Sprintln()
 	}
 
 	for year := allYear - 1; year >= 0; year-- {
 		if !monthHasRecord[year][0] {
 			continue
 		}
-		fmt.Printf("\n%s\n\n", yearHeader(year))
+		content += fmt.Sprintf("\n%s\n\n", yearHeader(year))
 		for m := 12; m > 0; m-- {
 			if monthHasRecord[year][m] {
-				fmt.Printf(" [-%s-](%s)", fmtNumber(m), monthHeaderLink(year, m))
+				content += fmt.Sprintf(" [-%s-](%s)", fmtNumber(m), monthHeaderLink(year, m))
 			}
 		}
-		fmt.Println()
+		content += fmt.Sprintln()
 		for m := 12; m > 0; m-- {
 			if !monthHasRecord[year][m] {
 				continue
 			}
-			fmt.Printf("\n%s\n\n", monthHeader(year, m))
+			content += fmt.Sprintf("\n%s\n\n", monthHeader(year, m))
 			// 输出月历
 			firstDay := time.Date(year, time.Month(m), 1, 0, 0, 0, 0, time.UTC)
-			fmt.Println("|周|一|二|三|四|五|六|日|")
-			fmt.Println("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
+			content += fmt.Sprintln("|周|一|二|三|四|五|六|日|")
+			content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
 			week := 0
 			weekRecord := [8]string{}
 			for day := firstDay; day.Month() == firstDay.Month(); day = day.Add(time.Hour * 24) {
@@ -105,19 +99,18 @@ func main() {
 					weekRecord[wd] = fmt.Sprintf("%s", fmtNumber(d))
 				}
 				if wd == 7 {
-					fmt.Printf("|%s|\n", strings.Join(weekRecord[:], "|"))
+					content += fmt.Sprintf("|%s|\n", strings.Join(weekRecord[:], "|"))
 					weekRecord = [8]string{}
 				}
 			}
 			if weekRecord != [8]string{} {
-				fmt.Printf("|%s|\n", strings.Join(weekRecord[:], "|"))
+				content += fmt.Sprintf("|%s|\n", strings.Join(weekRecord[:], "|"))
 			}
 
-			fmt.Printf("\n> [年代表](#%%20年代表) - [%d](%s)\n", year, yearHeaderLink(year))
-
-			// fmt.Println("|周|一|二|三|四|五|六|日|")
+			content += fmt.Sprintf("\n> [年代表](#%%20年代表) - [%d](%s)\n", year, yearHeaderLink(year))
 		}
 	}
+	return content
 }
 
 func yearHeader(year int) string {
@@ -143,7 +136,7 @@ func fmtNumber(i int) string {
 	return fmt.Sprintf("  %d  ", i)
 }
 
-func getTime(filename string) (time.Time, bool) {
+func getDate(filename string) (time.Time, bool) {
 	if len(filename) < 10 {
 		return time.Time{}, false
 	}
@@ -152,4 +145,27 @@ func getTime(filename string) (time.Time, bool) {
 		return time.Time{}, false
 	}
 	return t, true
+}
+
+func create(fileName, content string) {
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		fmt.Println("文件打开/创建失败,原因是:", err)
+		return
+	}
+
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			fmt.Println("文件关闭失败,原因是:", err)
+		}
+	}()
+
+	file.WriteString(content)
+}
+
+type record struct {
+	dayHasRecord   [allYear][13][32]bool
+	monthHasRecord [allYear][13]bool
+	yearHasRecord  [allYear / 10][11]bool
 }

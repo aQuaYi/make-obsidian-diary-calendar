@@ -1,2 +1,1 @@
-# make-obsidian-diary-calendar
-make obsidian diary calendar
+# 为 Obsidian 的日记文件夹创建日历
