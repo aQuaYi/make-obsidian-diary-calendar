@@ -109,6 +109,10 @@ func yearsTable() string {
 	return content
 }
 
+func monthHasRecord(year, month int) bool {
+	return monthes[year][month]
+}
+
 func yearHasRecord(year int) bool {
 	return monthes[year][0]
 }
@@ -126,11 +130,11 @@ func yearSection(year int) string {
 	//
 	content += fmt.Sprintln()
 
-	for m := 12; m > 0; m-- {
-		if !monthes[year][m] {
+	for month := 12; month > 0; month-- {
+		if !monthHasRecord(year, month) {
 			continue
 		}
-		content += monthView(year, m)
+		content += monthView(year, month)
 	}
 	return content
 }
@@ -138,7 +142,7 @@ func yearSection(year int) string {
 func monthesLine(year int) string {
 	content := ""
 	for m := 12; m > 0; m-- {
-		if monthes[year][m] {
+		if monthHasRecord(year, m) {
 			content += fmt.Sprintf(" [-%s-](%s)", fmtNum(m), monthHeaderLink(year, m))
 		}
 	}
