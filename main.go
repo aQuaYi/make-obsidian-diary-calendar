@@ -57,6 +57,18 @@ func record(date time.Time) {
 	decades[dec] = true
 }
 
+func monthHasRecord(year, month int) bool {
+	return monthes[year][month]
+}
+
+func yearHasRecord(year int) bool {
+	return monthes[year][0]
+}
+
+func decadeHasRecord(decade int) bool {
+	return decades[decade]
+}
+
 func create(fileName, content string) {
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
@@ -107,18 +119,6 @@ func yearsTable() string {
 		content += fmt.Sprintln()
 	}
 	return content
-}
-
-func monthHasRecord(year, month int) bool {
-	return monthes[year][month]
-}
-
-func yearHasRecord(year int) bool {
-	return monthes[year][0]
-}
-
-func decadeHasRecord(decade int) bool {
-	return decades[decade]
 }
 
 func yearSection(year int) string {
