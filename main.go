@@ -61,6 +61,10 @@ func record(date time.Time) {
 	decades[dec] = true
 }
 
+func dayHasRecord(year, month, day int) bool {
+	return days[year][month][day]
+}
+
 func monthHasRecord(year, month int) bool {
 	return monthes[year][month]
 }
@@ -173,7 +177,7 @@ func monthView(year, month int) string {
 		if wd == 0 {
 			wd = 7 //星期天的 weekday 是 0
 		}
-		if days[year][month][d] {
+		if dayHasRecord(year, month, d) {
 			weekRecord[wd] = fmt.Sprintf("[[%s\\|%s]]", day.Format(format), fmtNum(d))
 		} else {
 			weekRecord[wd] = fmt.Sprintf("%s", fmtNum(d))
