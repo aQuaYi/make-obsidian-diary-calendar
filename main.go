@@ -16,7 +16,7 @@ var monthHasRecord = [allYear][13]bool{}
 var yearHasRecord = [allYear / 10][11]bool{}
 
 func main() {
-	files, _ := ioutil.ReadDir("./days/")
+	files, _ := ioutil.ReadDir("./Diary/")
 	for _, f := range files {
 		t, ok := getTime(f.Name())
 		if !ok {
