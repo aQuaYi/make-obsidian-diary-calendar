@@ -22,6 +22,35 @@ func main() {
 	create("new.md", content)
 }
 
+func counter() {
+	files, _ := ioutil.ReadDir("./Diary/")
+	for _, f := range files {
+		date, ok := getDate(f.Name())
+		if !ok {
+			continue
+		}
+		set(date)
+	}
+}
+func getDate(filename string) (time.Time, bool) {
+	if len(filename) < 10 {
+		return time.Time{}, false
+	}
+	t, err := time.Parse(format, filename[:10])
+	if err != nil {
+		return time.Time{}, false
+	}
+	return t, true
+}
+func set(date time.Time) {
+	year, month, day := date.Year(), date.Month(), date.Day()
+	days[year][month][day] = true
+	monthes[year][0] = true
+	monthes[year][int(month)] = true
+	dec := year / 10
+	decades[dec] = true
+}
+
 func create(fileName, content string) {
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
@@ -69,41 +98,6 @@ func monthHeaderLink(year, month int) string {
 
 func fmtNum(i int) string {
 	return fmt.Sprintf("%d", i)
-}
-
-func getDate(filename string) (time.Time, bool) {
-	if len(filename) < 10 {
-		return time.Time{}, false
-	}
-	t, err := time.Parse(format, filename[:10])
-	if err != nil {
-		return time.Time{}, false
-	}
-	return t, true
-}
-
-func set(date time.Time) {
-	year, month, day := date.Year(), date.Month(), date.Day()
-	days[year][month][day] = true
-	monthes[year][0] = true
-	monthes[year][int(month)] = true
-	dec := year / 10
-	decades[dec] = true
-}
-
-func thisDecadeHasRecord(dec [11]bool) bool {
-	return dec[10]
-}
-
-func counter() {
-	files, _ := ioutil.ReadDir("./Diary/")
-	for _, f := range files {
-		date, ok := getDate(f.Name())
-		if !ok {
-			continue
-		}
-		set(date)
-	}
 }
 
 func yearTable() string {
