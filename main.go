@@ -14,25 +14,36 @@ const maxDecade = maxYear / 10
 
 var days = [maxYear][13][32]bool{}
 var monthes = [maxYear][13]bool{}
-var years = [maxDecade][11]bool{}
+var decades = [maxDecade]bool{}
 
 func main() {
-	setDate()
+	counter()
 	content := makeContent()
 	create("new.md", content)
 }
 
+func create(fileName, content string) {
+	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		fmt.Println("文件打开/创建失败,原因是:", err)
+		return
+	}
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			fmt.Println("文件关闭失败,原因是:", err)
+		}
+	}()
+	file.WriteString(content)
+}
+
 func makeContent() string {
 	content := ""
-	//
-	//制作年份
-	//
+	//制作年份表
 	content += yearTable()
-	//
 	// 制作年段落
-	//
 	for year := maxYear - 1; year >= 0; year-- {
-		if !hasGetYearHasRecord(year) {
+		if !yearHasRecord(year) {
 			continue
 		}
 		content += yearSection(year)
@@ -74,23 +85,6 @@ func getDate(filename string) (time.Time, bool) {
 	return t, true
 }
 
-func create(fileName, content string) {
-	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0755)
-	if err != nil {
-		fmt.Println("文件打开/创建失败,原因是:", err)
-		return
-	}
-
-	defer func() {
-		err = file.Close()
-		if err != nil {
-			fmt.Println("文件关闭失败,原因是:", err)
-		}
-	}()
-
-	file.WriteString(content)
-}
-
 type record struct {
 	dayHasRecord   [maxYear][13][32]bool
 	monthHasRecord [maxYear][13]bool
@@ -102,20 +96,19 @@ func set(date time.Time) {
 	days[year][month][day] = true
 	monthes[year][0] = true
 	monthes[year][int(month)] = true
-	dec, y := year/10, year%10
-	years[dec][10] = true
-	years[dec][y] = true
+	dec := year / 10
+	decades[dec] = true
 }
 
-func getYearHasRecord() [maxYear / 10][11]bool {
-	return years
+func getYearHasRecord() [maxDecade]bool {
+	return decades
 }
 
 func thisDecadeHasRecord(dec [11]bool) bool {
 	return dec[10]
 }
 
-func setDate() {
+func counter() {
 	files, _ := ioutil.ReadDir("./Diary/")
 	for _, f := range files {
 		date, ok := getDate(f.Name())
@@ -127,19 +120,18 @@ func setDate() {
 }
 
 func yearTable() string {
-
 	content := fmt.Sprint("# 年份\n\n")
 	content += fmt.Sprintln("|0|1|2|3|4|5|6|7|8|9|")
 	content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
-	for d, has := range getYearHasRecord() {
-		if !thisDecadeHasRecord(has) {
+	for d := 0; d < maxDecade; d++ {
+		if !decades[d] {
 			continue
 		}
 		content += fmt.Sprint("|")
 		y := d * 10
 		for i := 0; i < 10; i++ {
 			year := y + i
-			if has[i] {
+			if yearHasRecord(year) {
 				content += fmt.Sprintf("**[%d](%s)**", year, yearHeaderLink(year))
 			}
 			content += fmt.Sprint("|")
@@ -147,6 +139,10 @@ func yearTable() string {
 		content += fmt.Sprintln()
 	}
 	return content
+}
+
+func yearHasRecord(year int) bool {
+	return monthes[year][0]
 }
 
 func yearSection(year int) string {
@@ -212,8 +208,4 @@ func monthView(year, month int) string {
 	}
 	content += fmt.Sprintf("\n> [年份](#%%20年份) - [%d](%s)\n", year, yearHeaderLink(year))
 	return content
-}
-
-func hasGetYearHasRecord(year int) bool {
-	return monthes[year][0]
 }
