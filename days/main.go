@@ -3,12 +3,31 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 )
 
 func main() {
+	format := "2006-01-02"
+	staStr := "2009-05-09"
+	endStr := "2020-10-10"
+	start, _ := time.Parse(format, staStr)
+	end, _ := time.Parse(format, endStr)
+	fmt.Println("date", start, end)
+	for day := start; day.Before(end); day = day.Add(time.Hour * 24) {
+		if hasNotes() {
+			create(fileName(day, format))
+		}
+	}
+}
 
-	return
+func hasNotes() bool {
+	return rand.Intn(100) > 50
+}
+
+func fileName(day time.Time, format string) string {
+	return day.Format(format) + ".md"
 }
 
 func create(fileName string) {
