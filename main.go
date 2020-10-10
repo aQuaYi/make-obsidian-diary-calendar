@@ -75,7 +75,7 @@ func create(fileName, content string) {
 func makeContent() string {
 	content := ""
 	//制作年份表
-	content += yearTable()
+	content += yearsTable()
 	// 制作年段落
 	for year := maxYear - 1; year >= 0; year-- {
 		if !yearHasRecord(year) {
@@ -86,22 +86,23 @@ func makeContent() string {
 	return content
 }
 
-func yearTable() string {
+func yearsTable() string {
 	content := fmt.Sprint("# 年份\n\n")
 	content += fmt.Sprintln("|0|1|2|3|4|5|6|7|8|9|")
 	content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
 	for d := 0; d < maxDecade; d++ {
-		if !decades[d] {
+		if !decadeHasRecord(d) {
 			continue
 		}
 		content += fmt.Sprint("|")
-		y := d * 10
-		for i := 0; i < 10; i++ {
-			year := y + i
+		dec := d * 10
+		for y := 0; y < 10; y++ {
+			year := dec + y
 			if yearHasRecord(year) {
-				content += fmt.Sprintf("**[%d](%s)**", year, yearHeaderLink(year))
+				content += fmt.Sprintf("**[%d](%s)**|", year, yearHeaderLink(year))
+			} else {
+				content += fmt.Sprint("|")
 			}
-			content += fmt.Sprint("|")
 		}
 		content += fmt.Sprintln()
 	}
@@ -110,6 +111,10 @@ func yearTable() string {
 
 func yearHasRecord(year int) bool {
 	return monthes[year][0]
+}
+
+func decadeHasRecord(decade int) bool {
+	return decades[decade]
 }
 
 func yearSection(year int) string {
