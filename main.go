@@ -10,35 +10,33 @@ import (
 
 const format = "2006-01-02"
 const maxYear = 3000
-const dec = maxYear / 10
+const maxDecade = maxYear / 10
 
-var dayHasRecord = [maxYear][13][32]bool{}
-var monthHasRecord = [maxYear][13]bool{}
-var yearHasRecord = [maxYear / 10][11]bool{}
+var days = [maxYear][13][32]bool{}
+var monthes = [maxYear][13]bool{}
+var years = [maxDecade][11]bool{}
 
 func main() {
+	setDate()
 	content := makeContent()
 	create("new.md", content)
 }
 
 func makeContent() string {
-	setDate()
-
 	content := ""
 	//
-	//制作年代表
+	//制作年份
 	//
 	content += yearTable()
 	//
 	// 制作年段落
 	//
 	for year := maxYear - 1; year >= 0; year-- {
-		if !monthHasRecord[year][0] {
+		if !hasGetYearHasRecord(year) {
 			continue
 		}
 		content += yearSection(year)
 	}
-
 	return content
 }
 
@@ -101,16 +99,16 @@ type record struct {
 
 func set(date time.Time) {
 	year, month, day := date.Year(), date.Month(), date.Day()
-	dayHasRecord[year][month][day] = true
-	monthHasRecord[year][0] = true
-	monthHasRecord[year][int(month)] = true
-	d, y := year/10, year%10
-	yearHasRecord[d][10] = true
-	yearHasRecord[d][y] = true
+	days[year][month][day] = true
+	monthes[year][0] = true
+	monthes[year][int(month)] = true
+	dec, y := year/10, year%10
+	years[dec][10] = true
+	years[dec][y] = true
 }
 
 func getYearHasRecord() [maxYear / 10][11]bool {
-	return yearHasRecord
+	return years
 }
 
 func thisDecadeHasRecord(dec [11]bool) bool {
@@ -130,7 +128,7 @@ func setDate() {
 
 func yearTable() string {
 
-	content := fmt.Sprint("# 年代表\n\n")
+	content := fmt.Sprint("# 年份\n\n")
 	content += fmt.Sprintln("|0|1|2|3|4|5|6|7|8|9|")
 	content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
 	for d, has := range getYearHasRecord() {
@@ -161,7 +159,7 @@ func yearSection(year int) string {
 	content += fmt.Sprintln()
 
 	for m := 12; m > 0; m-- {
-		if !monthHasRecord[year][m] {
+		if !monthes[year][m] {
 			continue
 		}
 		content += monthView(year, m)
@@ -172,7 +170,7 @@ func yearSection(year int) string {
 func monthesLine(year int) string {
 	content := ""
 	for m := 12; m > 0; m-- {
-		if monthHasRecord[year][m] {
+		if monthes[year][m] {
 			content += fmt.Sprintf(" [-%s-](%s)", fmtNumber(m), monthHeaderLink(year, m))
 		}
 	}
@@ -199,7 +197,7 @@ func monthView(year, month int) string {
 		if wd == 0 {
 			wd = 7 //星期天的 weekday 是 0
 		}
-		if dayHasRecord[year][month][d] {
+		if days[year][month][d] {
 			weekRecord[wd] = fmt.Sprintf("[[%s\\|%s]]", day.Format(format), fmtNumber(d))
 		} else {
 			weekRecord[wd] = fmt.Sprintf("%s", fmtNumber(d))
@@ -212,6 +210,10 @@ func monthView(year, month int) string {
 	if weekRecord != [8]string{} {
 		content += fmt.Sprintf("|%s|\n", strings.Join(weekRecord[:], "|"))
 	}
-	content += fmt.Sprintf("\n> [年代表](#%%20年代表) - [%d](%s)\n", year, yearHeaderLink(year))
+	content += fmt.Sprintf("\n> [年份](#%%20年份) - [%d](%s)\n", year, yearHeaderLink(year))
 	return content
+}
+
+func hasGetYearHasRecord(year int) bool {
+	return monthes[year][0]
 }
