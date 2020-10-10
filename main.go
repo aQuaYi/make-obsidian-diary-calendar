@@ -29,13 +29,7 @@ func makeContent() string {
 		if !ok {
 			continue
 		}
-		year, month, day := date.Year(), date.Month(), date.Day()
-		dayHasRecord[year][month][day] = true
-		monthHasRecord[year][0] = true
-		monthHasRecord[year][int(month)] = true
-		d, y := year/10, year%10
-		yearHasRecord[d][10] = true
-		yearHasRecord[d][y] = true
+		set(date)
 	}
 
 	//
@@ -44,8 +38,8 @@ func makeContent() string {
 	content := fmt.Sprint("# 年代表\n\n")
 	content += fmt.Sprintln("|0|1|2|3|4|5|6|7|8|9|")
 	content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
-	for d, has := range yearHasRecord {
-		if !has[10] {
+	for d, has := range getYearHasRecord() {
+		if !thisDecadeHasRecord(has) {
 			continue
 		}
 		content += fmt.Sprint("|")
@@ -60,6 +54,8 @@ func makeContent() string {
 		content += fmt.Sprintln()
 	}
 
+	// 制作月历
+	//
 	for year := allYear - 1; year >= 0; year-- {
 		if !monthHasRecord[year][0] {
 			continue
@@ -168,4 +164,22 @@ type record struct {
 	dayHasRecord   [allYear][13][32]bool
 	monthHasRecord [allYear][13]bool
 	yearHasRecord  [allYear / 10][11]bool
+}
+
+func set(date time.Time) {
+	year, month, day := date.Year(), date.Month(), date.Day()
+	dayHasRecord[year][month][day] = true
+	monthHasRecord[year][0] = true
+	monthHasRecord[year][int(month)] = true
+	d, y := year/10, year%10
+	yearHasRecord[d][10] = true
+	yearHasRecord[d][y] = true
+}
+
+func getYearHasRecord() [allYear / 10][11]bool {
+	return yearHasRecord
+}
+
+func thisDecadeHasRecord(dec [11]bool) bool {
+	return dec[10]
 }
