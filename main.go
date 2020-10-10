@@ -9,6 +9,10 @@ import (
 )
 
 const format = "2006-01-02"
+const path = "./Diary/"
+
+// const calendarName = "Calendar.md"
+const calendarName = "new.md" // for test
 const maxYear = 3000
 const maxDecade = maxYear / 10
 
@@ -19,11 +23,11 @@ var decades = [maxDecade]bool{}
 func main() {
 	counter()
 	content := makeContent()
-	create("new.md", content)
+	create(calendarName, content)
 }
 
 func counter() {
-	files, _ := ioutil.ReadDir("./Diary/")
+	files, _ := ioutil.ReadDir(path)
 	for _, f := range files {
 		date, ok := dateOf(f.Name())
 		if !ok {
@@ -46,14 +50,14 @@ func dateOf(filename string) (time.Time, bool) {
 
 func record(date time.Time) {
 	year, month, day := date.Year(), date.Month(), date.Day()
-	// 那天有记录
+	// 天有记录
 	days[year][month][day] = true
-	// 那月有记录
+	// 月有记录
 	monthes[year][int(month)] = true
-	// 那年有记录
+	// 年有记录
 	monthes[year][0] = true
 	dec := year / 10
-	// 那个十年有记录
+	// 年代有记录
 	decades[dec] = true
 }
 
