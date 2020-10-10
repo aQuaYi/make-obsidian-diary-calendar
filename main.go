@@ -67,11 +67,8 @@ func monthHeaderLink(year, month int) string {
 	return fmt.Sprintf("###%%20%d-%02d", year, month)
 }
 
-func fmtNumber(i int) string {
-	if i < 10 {
-		return fmt.Sprintf("   %d  ", i)
-	}
-	return fmt.Sprintf("  %d  ", i)
+func fmtNum(i int) string {
+	return fmt.Sprintf("%d", i)
 }
 
 func getDate(filename string) (time.Time, bool) {
@@ -85,12 +82,6 @@ func getDate(filename string) (time.Time, bool) {
 	return t, true
 }
 
-type record struct {
-	dayHasRecord   [maxYear][13][32]bool
-	monthHasRecord [maxYear][13]bool
-	yearHasRecord  [maxYear / 10][11]bool
-}
-
 func set(date time.Time) {
 	year, month, day := date.Year(), date.Month(), date.Day()
 	days[year][month][day] = true
@@ -98,10 +89,6 @@ func set(date time.Time) {
 	monthes[year][int(month)] = true
 	dec := year / 10
 	decades[dec] = true
-}
-
-func getYearHasRecord() [maxDecade]bool {
-	return decades
 }
 
 func thisDecadeHasRecord(dec [11]bool) bool {
@@ -167,7 +154,7 @@ func monthesLine(year int) string {
 	content := ""
 	for m := 12; m > 0; m-- {
 		if monthes[year][m] {
-			content += fmt.Sprintf(" [-%s-](%s)", fmtNumber(m), monthHeaderLink(year, m))
+			content += fmt.Sprintf(" [-%s-](%s)", fmtNum(m), monthHeaderLink(year, m))
 		}
 	}
 	return content
@@ -194,9 +181,9 @@ func monthView(year, month int) string {
 			wd = 7 //星期天的 weekday 是 0
 		}
 		if days[year][month][d] {
-			weekRecord[wd] = fmt.Sprintf("[[%s\\|%s]]", day.Format(format), fmtNumber(d))
+			weekRecord[wd] = fmt.Sprintf("[[%s\\|%s]]", day.Format(format), fmtNum(d))
 		} else {
-			weekRecord[wd] = fmt.Sprintf("%s", fmtNumber(d))
+			weekRecord[wd] = fmt.Sprintf("%s", fmtNum(d))
 		}
 		if wd == 7 {
 			content += fmt.Sprintf("|%s|\n", strings.Join(weekRecord[:], "|"))
