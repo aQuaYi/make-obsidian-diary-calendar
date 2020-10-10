@@ -77,6 +77,7 @@ func decadeHasRecord(decade int) bool {
 }
 
 func create(fileName, content string) {
+	os.Remove(fileName)
 	file, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
 		fmt.Println("文件打开/创建失败,原因是:", err)
