@@ -8,11 +8,10 @@ import (
 	"time"
 )
 
+const calendarName = "Calendar.md"
 const format = "2006-01-02"
 const path = "./Diary/"
 
-// const calendarName = "Calendar.md"
-const calendarName = "new.md" // for test
 const maxYear = 3000
 const maxDecade = maxYear / 10
 
@@ -137,7 +136,7 @@ func yearSection(year int) string {
 	content += monthesLine(year)
 	//
 	content += fmt.Sprintln()
-
+	// add month view
 	for month := 12; month > 0; month-- {
 		if !monthHasRecord(year, month) {
 			continue
@@ -159,18 +158,20 @@ func monthesLine(year int) string {
 
 func monthView(year, month int) string {
 	content := ""
+	// add month header
 	content += fmt.Sprintf("\n%s\n\n", monthHeader(year, month))
 	// 输出月历
-	firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	content += fmt.Sprintln("|周|一|二|三|四|五|六|日|")
 	content += fmt.Sprintln("|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|")
-	week := 0
+	//
+	thisWeek := 0
 	weekRecord := [8]string{}
-	for day := firstDay; day.Month() == firstDay.Month(); day = day.Add(time.Hour * 24) {
-		_, w := day.ISOWeek()
-		if week != w {
-			week = w
-			weekRecord[0] = fmt.Sprintf("**%d**", week)
+	first := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	for day := first; isSameMonth(day, first); day = next(day) {
+		_, weekNum := day.ISOWeek()
+		if thisWeek != weekNum {
+			thisWeek = weekNum
+			weekRecord[0] = fmt.Sprintf("**%d**", thisWeek)
 		}
 		d := day.Day()
 		wd := int(day.Weekday())
@@ -190,8 +191,17 @@ func monthView(year, month int) string {
 	if weekRecord != [8]string{} {
 		content += fmt.Sprintf("|%s|\n", strings.Join(weekRecord[:], "|"))
 	}
+	// 添加一个小尾巴，方便跳转
 	content += fmt.Sprintf("\n> [年份](#%%20年份) - [%d](%s)\n", year, yearHeaderLink(year))
 	return content
+}
+
+func isSameMonth(day, first time.Time) bool {
+	return day.Month() == first.Month()
+}
+
+func next(day time.Time) time.Time {
+	return day.AddDate(0, 0, 1)
 }
 
 func yearHeader(year int) string {
